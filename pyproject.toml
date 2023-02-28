@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pycallflow"
-description = ''
+description = 'Maps function, class, and method calls in python projects, modules, and files'
 readme = "README.md"
 requires-python = ">=3.7"
 license = "MIT"
@@ -24,7 +24,6 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
-  "sqlite3",
   "networkx",
   "pydot",
   "tabulate"
@@ -32,9 +31,9 @@ dependencies = [
 dynamic = ["version"]
 
 [project.urls]
-Documentation = "https://github.com/unknown/pycallflow#readme"
-Issues = "https://github.com/unknown/pycallflow/issues"
-Source = "https://github.com/unknown/pycallflow"
+Documentation = "https://github.com/richmr/pycallflow#readme"
+Issues = "https://github.com/richmr/pycallflow/issues"
+Source = "https://github.com/richmr/pycallflow"
 
 [tool.hatch.version]
 path = "pycallflow/__about__.py"
