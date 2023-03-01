@@ -1,8 +1,9 @@
 import inspect
 import sys
+from importlib import import_module
 
 from .buildFileDB import getFileList
-from .cflow_importlib import import_module
+#from .cflow_importlib import import_module
 from .callFlowData import callFlowData
 
 def buildDeclaredEntitiesDB(db_conn):
