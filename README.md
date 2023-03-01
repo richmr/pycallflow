@@ -38,13 +38,13 @@ pip install pycallflow
 
 Invoke with
 ```console
-python -m pycallflow [target module]
+python -m pycallflow [target]
 ```
 To generate a DOT-language call flow diagram of every discovered entity.
 
 If you have GraphViz installed you can pipe it:
 ```console
-python -m pycallflow [target module] | dot -Tpng -ofilename.png
+python -m pycallflow [target] | dot -Tpng -ofilename.png
 ```
 ### Clean up
 
@@ -57,13 +57,41 @@ Entities that recurse on themselves will get loop indicators like this:
 PIC HERE
 
 ```console
-python -m pycallflow --suppress_recursive_calls [module]
+python -m pycallflow --suppress_recursive_calls [target]
 ```
 Will result in the elimination of these loops:
 
 PIC HERE
 
-####
+#### combine_calls
+
+Entities may call the same entity more than once.  By default, this will show as multiple indicators:
+
+PIC HERE
+
+```console
+python -m pycallflow --combine_calls [target]
+```
+Will allow on one indicator between entities:
+
+PIC HERE
+
+#### suppress_class_references
+
+By default an entity that references a class will get an indicator similar to :
+
+PIC HERE
+
+This can be handy if an entity assigns a class reference to a variable.  However, it may be obvious that the entity is calling a class method in which case the "reference" indicator will just be added noise.
+
+```console
+python -m pycallflow --suppress_class_references [target]
+```
+
+Will clean these up:
+PIC HERE
+
+
 
 
 
