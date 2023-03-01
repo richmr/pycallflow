@@ -7,11 +7,6 @@
 ## WARNING
 Do not use pycallflow to map hostile or potentially malicious python code.  Code may be executed as it is examined.
 
-**Table of Contents**
-
-- [Installation](#installation)
-- [License](#license)
-
 ## What is Pycallflow
 
 Pycallflow produces GraphViz-compatible output that visually shows the flow of calls within a module, package, or directory of python files like this:
