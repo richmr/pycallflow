@@ -152,3 +152,5 @@ cython_debug/
 #.idea/
 
 clean/
+images/no_reference_full.png
+images/calls_combined_full.png
