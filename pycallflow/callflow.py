@@ -14,8 +14,9 @@ from .output import simpleTextOutput, pydot_output, entity_list_output
 
     
 def cli_run():
+    version = "Dev"
     #  Arguments
-    description = "pycallflow: "
+    description = f"pycallflow v{version}: "
     description += "Maps call flows in python packages, modules, and directories"
     parser = argparse.ArgumentParser(
         description=description, prog="pycallflow")
@@ -42,6 +43,10 @@ def cli_run():
     
     args = parser.parse_args()
     
+        
+    if args.Version:
+        print(f"pycallflow version {version}")
+        sys.exit()
         
     cf_data = collectData(**vars(args))
     with cf_data.getSqliteConnection() as conn:
