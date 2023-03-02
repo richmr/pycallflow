@@ -61,12 +61,17 @@ class pydot_output:
         suppress_recursive_calls,
         combine_calls,
         suppress_class_references,
+        suppress_calls_to_init,
+        select_entity_id = None,
         graph_name = "Callflow Analysis",
         **kwargs
     ):
         graph = pydot.Graph(graph_name, compound=True, rankdir=rankdir)
         file_clusters = {}
         class_clusters = {}
+        select_entity_id_list = []
+        if select_entity_id is not None:
+            select_entity_id_list = [int(id) for id in select_entity_id.split(",")]
         # First generate the file clusters, class clusters, and add a node to each entity
         for n, (k, v) in enumerate(finalOutputDataObject.items()):
             if v["file_import_path"] not in file_clusters.keys():
@@ -85,7 +90,15 @@ class pydot_output:
                 cc = class_clusters[v["member_of_class"]]
 
             # Make the initial node
-            this_node = pydot.Node(name=str(k), label=v["name"])
+            style="solid"
+            color="black"
+            shape="oval"
+            # Check if I should highlight this one.
+            if k in select_entity_id_list:
+                style="bold"
+                color="blue"
+                shape="doubleoctagon"
+            this_node = pydot.Node(name=str(k), label=v["name"], style=style, color=color, shape=shape)
             if v["entity_type"] == "class":
                 # Make sure it has a Cluster
                 if k not in class_clusters.keys():
