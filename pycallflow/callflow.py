@@ -38,16 +38,12 @@ def cli_run():
     parser.add_argument("--stdout_capture_file", type=str, default=os.devnull, help="Since the examined code is actually imported any code not protected with a __main__ clause will run. Stdout is normally redirected to os.devnull to prevent output corruption.  Specify another filename if you would like to capture the output from the analyzed code.")
     parser.add_argument("--select_entity_id", type=str, default=None,
                         help="Comma separated list of specific entity ID numbers to trace.  Use -oentity_list to get the entity ID.  The entity ID will remain constant if there are no changes to the files or added files.")
+    parser.add_argument("--suppress_calls_to_init", action="store_true", help="Will not show calls going to __init__ functions.  These can be very noisy if a superclass has many subclasses.")
     ### Not implemented
     # parser.add_argument("--highlight_orphans", action="store_true", help="Will highlight entities that are never called (possible dead code).  Only does anything in with 'dot' output")
     
     args = parser.parse_args()
     
-        
-    if args.Version:
-        print(f"pycallflow version {version}")
-        sys.exit()
-        
     cf_data = collectData(**vars(args))
     with cf_data.getSqliteConnection() as conn:
         if args.output == "entity_list":
@@ -66,6 +62,7 @@ def collectData( # See argparse list in cli_run()
     db_file = ":memory:",
     verbose = False,
     stdout_capture_file = os.devnull,
+    suppress_calls_to_init = False,
     **kwargs        # Catch all     
 ):
     """
@@ -102,7 +99,7 @@ def collectData( # See argparse list in cli_run()
                 findDeclaredEntities_inlineSave(conn)
                 print(
                     f"[-] Found {len(cf_data.getDiscoveredObjects())} objects", file=verbose_out_f)
-                buildCallflowDB(conn)
+                buildCallflowDB(conn, suppress_calls_to_init)
     
     if not verbose:
         # Make sure to clean up the os.devnull file

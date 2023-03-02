@@ -2,7 +2,7 @@ import dis
 
 from .callFlowData import callFlowData
 
-def buildCallflowDB(db_conn):
+def buildCallflowDB(db_conn, suppress_calls_to_init):
     foundCalls = []
     objs_to_analyze = callFlowData().getDiscoveredObjects()
     entity_names, entity_data = entitylists(db_conn.cursor())
@@ -11,6 +11,10 @@ def buildCallflowDB(db_conn):
         try:
             for t in dis.get_instructions(obj):
                 if t.argval in entity_names:
+                    if suppress_calls_to_init:
+                        if t.argval == "__init__":
+                            # We don't add it to the database.
+                            continue
                     # Get all IDs with this name
                     for id in findAllEntityIDWithName(db_conn.cursor(), t.argval):
                         this_call = {
