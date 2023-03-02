@@ -40,6 +40,13 @@ If you have GraphViz installed you can pipe it:
 ```console
 python -m pycallflow [target] | dot -Tpng -ofilename.png
 ```
+
+### Flow Arrows (edges)
+
+The colors of the edges do not mean anything.  I rotate through a list of contrasting colors in an attempt make it easier to trace the flow lines.  You can set the color with ```---edge_color``` if you want it fixed to a specifc color.
+
+You may see dashed edges.  Dashed edges indicate the call or reference may be ambiguous.  This means there are multiple entities with the exact same name (i.e. two or more files or classes contain a function with the same name).  This is very common with subclasses that override parent methods.  Though Python always seems to know which one you mean, it's a little harder to figure out from the outside.  Improving this is a main goal for the future.
+
 ### Clean up
 
 The diagrams can get quite busy, but there are three options that can limit some of the noise
