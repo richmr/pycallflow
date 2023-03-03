@@ -43,6 +43,7 @@ dependencies = [
   "pytest",
   "pytest-cov",
 ]
+system-packages = true
 [tool.hatch.envs.default.scripts]
 cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=pycallflow --cov=tests {args}"
 no-cov = "cov --no-cov {args}"

@@ -2,7 +2,7 @@ import dis
 
 from .callFlowData import callFlowData
 
-def buildCallflowDB(db_conn):
+def buildCallflowDB(db_conn, suppress_calls_to_init, match_to_file):
     foundCalls = []
     objs_to_analyze = callFlowData().getDiscoveredObjects()
     entity_names, entity_data = entitylists(db_conn.cursor())
@@ -11,8 +11,12 @@ def buildCallflowDB(db_conn):
         try:
             for t in dis.get_instructions(obj):
                 if t.argval in entity_names:
+                    if suppress_calls_to_init:
+                        if t.argval == "__init__":
+                            # We don't add it to the database.
+                            continue
                     # Get all IDs with this name
-                    for id in findAllEntityIDWithName(db_conn.cursor(), t.argval):
+                    for id in findAllEntityIDWithName(db_conn.cursor(), t.argval, obj.callflow_file_id, match_to_file):
                         this_call = {
                             "fileID": obj.callflow_file_id,
                             "entityID": obj.callflow_entity_id, 
@@ -48,18 +52,27 @@ def entitylists(db_cursor):
         data.append(dict(zip(row.keys(), row)))
     return names, data
 
-def findAllEntityIDWithName(db_cursor, entity_name):
+def findAllEntityIDWithName(db_cursor, entity_name, fileID, match_to_file=False):
     stmt = """
         SELECT
-            entityID
+            entityID,
+            fileID
         FROM
             Entities
         WHERE
             entity_name = ?;
     """
     toreturn = []
+    possibles = []
     for row in db_cursor.execute(stmt, (entity_name, )):
-        toreturn.append(row["entityID"])
+        possibles.append(row["entityID"])
+        if match_to_file and (row["fileID"] == fileID):
+            toreturn.append(row["entityID"])
+
+    # if there is nothing in toreturn, we set toreturn = possibles
+    if len(toreturn) == 0:
+        toreturn = possibles
+
     return toreturn
 
 
