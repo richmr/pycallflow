@@ -49,7 +49,11 @@ You may see dashed edges.  Dashed edges indicate the call or reference may be am
 
 ### Clean up
 
-The diagrams can get quite busy, but there are three options that can limit some of the noise
+The diagrams can get quite busy, but there are options that can limit some of the noise.
+
+#### --clean
+
+Specifying this option will turn all of the clean up options on.  I recommend it under most circumstances.
 
 #### --suppress_recursive_calls
 
@@ -92,6 +96,14 @@ python -m pycallflow --suppress_class_references [target]
 Will clean these up:
 
 ![Class references suppressed](images/no_class_reference.png "Class reference suppressed")
+
+#### --suppress_calls_to_init
+
+Typically the only thing calling ```__init__()``` is a subclass calling ```super().__init__()```.  This can add unnecessary complexity to the diagram without adding value.  Specify ```--suppress_calls_to_init``` to eliminate these.   
+
+#### --match_to_file
+
+This is an option to limit ambiguous calls (calls to an entity that shares a name across the analyzed code space).  When this is set, pycallflow will look for entities first in the same file as the calling entity and will choose those over other files.
 
 ### Investigate Specific Entities
 
@@ -155,6 +167,8 @@ The code you want to examine may not be package or module, but just code files i
 ### Analyzed Code WILL Execute
 
 Pycallflow works by importing files and then inspecting the objects that result.  This can only be done by actually executing the code.  If there is code not protected by a ```if __name__ == "__main__":``` clause or buried inside a class, method, or function it *WILL EXECUTE*.  
+
+If the executed code contains a ```sys.exit()``` or other process termination, pycallflow will not produce any output.  I learned this from experience.
 
 To prevent corrupting the DOT output, stdout is redirected to os.devnull (you can specify a file with ```--stdout_capture_file```).  This won't prevent other operations from happening.
 
