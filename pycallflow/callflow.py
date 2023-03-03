@@ -14,7 +14,7 @@ from .output import simpleTextOutput, pydot_output, entity_list_output
 
     
 def cli_run():
-    version = "Dev"
+    version = "0.1.0"
     #  Arguments
     description = f"pycallflow v{version}: "
     description += "Maps call flows in python packages, modules, and directories"
