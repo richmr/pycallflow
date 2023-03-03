@@ -40,6 +40,7 @@ def cli_run():
                         help="Comma separated list of specific entity ID numbers to trace.  Use -oentity_list to get the entity ID.  The entity ID will remain constant if there are no changes to the files or added files.")
     parser.add_argument("--suppress_calls_to_init", action="store_true", help="Will not show calls going to __init__ functions.  These can be very noisy if a superclass has many subclasses.")
     parser.add_argument("--clean", action="store_true", help="Will set all graph simplification options to true")
+    parser.add_argument("--match_to_file", action="store_true", help="Ambiguous calls happen if there are multiple entities with the same name in seprate files.  Setting this flag will make pycallflow choose calls from the same file, if they exist")
     ### Not implemented
     # parser.add_argument("--highlight_orphans", action="store_true", help="Will highlight entities that are never called (possible dead code).  Only does anything in with 'dot' output")
     
@@ -54,6 +55,7 @@ def cli_run():
         args_cp["combine_calls"] = True
         args_cp["suppress_class_references"] = True
         args_cp["suppress_calls_to_init"] = True
+        args_cp["match_to_file"] = True
     
     cf_data = collectData(**args_cp)
     with cf_data.getSqliteConnection() as conn:
@@ -74,6 +76,7 @@ def collectData( # See argparse list in cli_run()
     verbose = False,
     stdout_capture_file = os.devnull,
     suppress_calls_to_init = False,
+    match_to_file = False,
     **kwargs        # Catch all     
 ):
     """
@@ -110,7 +113,7 @@ def collectData( # See argparse list in cli_run()
                 findDeclaredEntities_inlineSave(conn)
                 print(
                     f"[-] Found {len(cf_data.getDiscoveredObjects())} objects", file=verbose_out_f)
-                buildCallflowDB(conn, suppress_calls_to_init)
+                buildCallflowDB(conn, suppress_calls_to_init, match_to_file)
     
     if not verbose:
         # Make sure to clean up the os.devnull file
