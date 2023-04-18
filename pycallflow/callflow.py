@@ -4,13 +4,14 @@ import importlib
 from pprint import pprint
 import sys
 import os
+import traceback
 
 from .callFlowData import callFlowData
 from .buildFileDB import buildFileDB
 from .buildDeclaredEntitiesDB import findDeclaredEntities_inlineSave
 from .analyzeCallFlow import buildCallflowDB
 from .finalResults import generateFinalResults_object, generateEntityResults_selectID_object, getEntityList
-from .output import simpleTextOutput, pydot_output, entity_list_output
+from .output import simpleTextOutput, pydot_output, entity_list_output, all_entity_flow
 
     
 def cli_run():
@@ -24,8 +25,8 @@ def cli_run():
         "target", help="Package or module name to attempt to map")
     parser.add_argument("-d", "--directory", action="store_true",
                         help="Consider the 'target' argument a directory, not a package")
-    parser.add_argument("-o", "--output", choices=["dot", "simple", "entity_list"], type=str, default="dot",
-                        help="Choose output type.  'dot' will produce dot-compatible drawing output. 'entity_list' provides table of discovered entity names for use in --select_entity_id.")
+    parser.add_argument("-o", "--output", choices=["dot", "simple", "entity_list", "entity_flow_graphs"], type=str, default="dot",
+                        help="Choose output type.  'dot' will produce dot-compatible drawing output. 'entity_list' provides table of discovered entity names for use in --select_entity_id. 'entity_flow_graphs' will make pycallflow generate a --clean callflow for every function and method entity found (__init__ and __del__ are ignored).  Files will be named by their 'import path' and 'name' and are stored as defined by --save_images_to.  This assumes graphviz is working on your system.  Images are pngs.")
     parser.add_argument("--rankdir", type=str, choices=[
                         "TB", "BT", "RL", "LR"], default="LR", help="See Graphviz documentation")
     parser.add_argument("--edge_color", type=str, default="rotate",
@@ -41,6 +42,7 @@ def cli_run():
     parser.add_argument("--suppress_calls_to_init", action="store_true", help="Will not show calls going to __init__ functions.  These can be very noisy if a superclass has many subclasses.")
     parser.add_argument("--clean", action="store_true", help="Will set all graph simplification options to true")
     parser.add_argument("--match_to_file", action="store_true", help="Ambiguous calls happen if there are multiple entities with the same name in seprate files.  Setting this flag will make pycallflow choose calls from the same file, if they exist")
+    parser.add_argument("--save_images_to", type=str, default="images", help="Set this to the directory you want -o entity_flow_graphs to save the images")
     ### Not implemented
     # parser.add_argument("--highlight_orphans", action="store_true", help="Will highlight entities that are never called (possible dead code).  Only does anything in with 'dot' output")
     
@@ -65,6 +67,21 @@ def cli_run():
         elif args.output == "dot":
             results = generateEntityResults_selectID_object(conn, select_entity_id=args.select_entity_id)
             pydot_output().output(results, **args_cp)
+        elif args.output == "entity_flow_graphs":
+            try:
+                aef = all_entity_flow(args.save_images_to)
+                aef.generate_all_entity_flows(conn, **args_cp)
+            except FileNotFoundError:
+                
+                print("'entity_flow_graphs' mode requires Graphviz and dot to be installed and on the system path")
+                return
+            except NotADirectoryError:
+                print(f"The {args.save_images_to} directory does not exist, please create it and try again")
+                return
+            except Exception as badnews:
+                # traceback.print_exc()
+                print(f"Unable to complete processing because {badnews}")
+                return
         else:
             results = generateFinalResults_object(conn)
             simpleTextOutput(results)

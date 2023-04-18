@@ -4,6 +4,12 @@ import pydot
 from collections import deque
 from tabulate import tabulate
 import sys
+import subprocess
+import os.path
+import os
+import traceback
+
+from .finalResults import generateEntityResults_selectID_object, getEntityList
 
 from pprint import pprint
 
@@ -64,6 +70,7 @@ class pydot_output:
         suppress_calls_to_init,
         select_entity_id = None,
         graph_name = "Callflow Analysis",
+        output_to_stdout = True,
         **kwargs
     ):
         graph = pydot.Graph(graph_name, compound=True, rankdir=rankdir)
@@ -157,7 +164,10 @@ class pydot_output:
                     graph.add_edge(pydot.Edge(from_node, to_node, style=style, color=color))
                     edge_list.append(edge_id)
 
-        print(graph.to_string())
+        if output_to_stdout:
+            print(graph.to_string())
+        else:
+            return graph.to_string()
 
     def init_x11_colors(self):
         self.x11_colors_d = deque([
@@ -198,7 +208,50 @@ class pydot_output:
         self.x11_colors_d.rotate(1)
         return color
 
+class all_entity_flow:
 
+    def __init__(self, save_images_to) -> None:
+        # Need to test for DOT working
+        try:
+            sp_run_result = subprocess.run(["dot", "--version"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except Exception:
+            # traceback.print_exc()
+            raise FileNotFoundError()
+        # Also check to see if the save directory exists
+        if not os.path.isdir(save_images_to):
+            raise NotADirectoryError()
+        else:
+            self.save_images_to = save_images_to
+
+
+    def generate_all_entity_flows(self, db_conn, 
+                                  **kwargs):
+        # Iterate over the entities and create single entity call flows
+        entity_list = getEntityList(db_conn)
+        for entity in entity_list:
+            try:
+                if entity["name"] in ["__init__", "__del__"]:
+                    continue
+                if entity["entity_type"] in ["class"]:
+                    continue
+                import_path = entity["file_import_path"].replace(".","_")
+                filename = f"{self.save_images_to}/{import_path}_{entity['name']}.png"
+                # Generate the dot data
+                # Convert entityID to string because the next call will attempt to split(",") on it
+                kwargs["select_entity_id"] = str(entity["entityID"])
+                this_entity_object = generateEntityResults_selectID_object(db_conn, select_entity_id=kwargs["select_entity_id"])
+                dot_data = pydot_output().output(this_entity_object, output_to_stdout=False,  **kwargs)
+                args = [
+                    "dot",
+                    "-Tpng",
+                    f"-o{filename}"
+                ]
+                p = subprocess.run(args=args, input=dot_data, text=True, capture_output=True)
+            except Exception as badnews:
+                print(f"Unable to make flow graph for {entity['name']} because {badnews}")
+
+
+        
 
 
 
