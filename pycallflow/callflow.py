@@ -42,7 +42,6 @@ def cli_run():
     parser.add_argument("--suppress_calls_to_init", action="store_true", help="Will not show calls going to __init__ functions.  These can be very noisy if a superclass has many subclasses.")
     parser.add_argument("--clean", action="store_true", help="Will set all graph simplification options to true")
     parser.add_argument("--match_to_file", action="store_true", help="Ambiguous calls happen if there are multiple entities with the same name in seprate files.  Setting this flag will make pycallflow choose calls from the same file, if they exist")
-    #parser.add_argument("--generate_entity_flows", action="store_true", help="Set this flag to make pycallflow generate a --clean callflow for every function and method entity found (__init__ and __del__ are ignored).  Files will be named by their 'import path' and 'name' and are stored as defined by --save_images_to.  This assumes graphviz is working on your system.  Images are pngs.")
     parser.add_argument("--save_images_to", type=str, default="images", help="Set this to the directory you want -o entity_flow_graphs to save the images")
     ### Not implemented
     # parser.add_argument("--highlight_orphans", action="store_true", help="Will highlight entities that are never called (possible dead code).  Only does anything in with 'dot' output")
